@@ -54,7 +54,7 @@ Edit `server/.env`:
 ```env
 PORT=5000
 NODE_ENV=development
-MONGODB_URI=mongodb://127.0.0.1:27017/industrial_intellect
+MONGODB_URI=mongodb+srv://industrial_admin:harshkk1911@rajeshcluster.rjvzduj.mongodb.net/industrial_intellect?retryWrites=true&w=majority
 JWT_SECRET=replace_with_a_long_random_secret_at_least_32_chars
 JWT_EXPIRES_IN=1d
 CLIENT_ORIGIN=http://localhost:5173

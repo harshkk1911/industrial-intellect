@@ -20,7 +20,8 @@ export default function VideoDetail({ library }) {
       setError('');
       setVideo(null);
       try {
-        const data = await apiRequest(`/content/${encodeURIComponent(slug)}`);
+        const lookupKey = slug || '';
+        const data = await apiRequest(`/content/${encodeURIComponent(lookupKey)}`);
         if (cancelled) return;
         setVideo(data.item);
 
@@ -45,7 +46,7 @@ export default function VideoDetail({ library }) {
   const done = video ? library.completed.includes(video._id) : false;
 
   if (loading) return <div className="container page-section"><div className="empty-state">Loading video...</div></div>;
-  if (error || !video) return <div className="container page-section"><div className="empty-state">{error || 'Video not found.'} <Link to="/">Return home</Link></div></div>;
+  if (error || !video) return <div className="container page-section"><div className="empty-state">{error || 'Video not found. This video may be unpublished or its link may be outdated.'} <Link to="/">Return home</Link></div></div>;
 
   return (
     <section className="container page-section">
@@ -62,7 +63,7 @@ export default function VideoDetail({ library }) {
         </div>
         <aside className="playlist-panel">
           <h3>Up next</h3><p className="muted">More to explore</p>
-          {relatedVideos.length ? relatedVideos.map(item => <Link className="playlist-item" key={item._id} to={`/video/${item.slug}`}><span className="playlist-number">▶</span><span><strong>{item.title}</strong><small>{item.courseTitle || item.category || 'Learning'}</small></span></Link>) : <p className="muted">No related videos yet.</p>}
+          {relatedVideos.length ? relatedVideos.map(item => <Link className="playlist-item" key={item._id} to={`/video/${item.slug || item._id}`}><span className="playlist-number">▶</span><span><strong>{item.title}</strong><small>{item.courseTitle || item.category || 'Learning'}</small></span></Link>) : <p className="muted">No related videos yet.</p>}
         </aside>
       </div>
     </section>

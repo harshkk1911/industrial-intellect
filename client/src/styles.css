@@ -168,3 +168,524 @@ h1,h2,h3,p { margin-top:0; }
   border-radius: inherit;
   display: block;
 }
+
+/* Homepage layout refinement */
+.container {
+  width: min(1200px, calc(100% - 64px));
+  margin-inline: auto;
+}
+
+.hero-content {
+  padding-top: 84px;
+  padding-bottom: 88px;
+}
+
+.section {
+  padding-block: 76px;
+}
+
+.section-heading {
+  align-items: flex-end;
+  gap: 24px;
+  margin-bottom: 30px;
+}
+
+.stats-grid {
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.content-grid {
+  column-gap: 22px;
+  row-gap: 26px;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+@media (max-width: 700px) {
+  .container {
+    width: calc(100% - 32px);
+  }
+
+  .hero-content {
+    padding-top: 60px;
+    padding-bottom: 64px;
+  }
+
+  .section {
+    padding-block: 52px;
+  }
+
+  .section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .stats-grid {
+    gap: 10px;
+  }
+
+  .card-body {
+    padding: 16px;
+  }
+}
+
+/* Admin workspace refinement */
+
+.admin-page {
+  max-width: 1240px;
+  padding-top: 42px;
+}
+
+.admin-page > .admin-welcome {
+  margin-bottom: 30px;
+}
+
+.admin-page > .admin-welcome h1 {
+  font-size: 34px;
+  margin: 12px 0 6px;
+}
+
+.admin-page > .admin-welcome h2 {
+  font-size: 23px;
+  margin-bottom: 7px;
+}
+
+.admin-page > .admin-welcome p {
+  margin-bottom: 0;
+}
+
+.admin-page .button {
+  min-height: 44px;
+  padding: 0 17px;
+}
+
+.admin-page .admin-quick-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin: 28px 0 36px;
+}
+
+.admin-page .stat-card {
+  min-height: 112px;
+  padding: 22px;
+  gap: 13px;
+  border-radius: 15px;
+}
+
+.admin-page .stat-card strong {
+  font-size: 27px;
+}
+
+.admin-page .stat-card span {
+  font-size: 13px;
+}
+
+.admin-page .admin-video-form {
+  width: 100%;
+  max-width: 900px;
+  margin: 24px 0 36px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 24px;
+}
+
+.admin-page .admin-video-form .admin-welcome,
+.admin-page .admin-video-form button,
+.admin-page .admin-video-form img,
+.admin-page .admin-video-form label:nth-of-type(3) {
+  grid-column: 1 / -1;
+}
+
+.admin-page .admin-video-form label {
+  margin: 0;
+}
+
+.admin-page .admin-video-form input,
+.admin-page .admin-video-form select,
+.admin-page .admin-video-form textarea {
+  width: 100%;
+  min-height: 45px;
+}
+
+.admin-page .admin-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  margin: 28px 0;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: var(--surface);
+}
+
+.admin-page .admin-toolbar input,
+.admin-page .admin-toolbar select {
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 13px;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+}
+
+.admin-page .admin-toolbar input {
+  flex: 1;
+}
+
+.admin-page .admin-video-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 22px;
+}
+
+.admin-page .admin-video-list > article {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: var(--surface);
+}
+
+.admin-page .admin-video-list > article > img {
+  width: 180px;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.admin-page .admin-video-list > article > div:last-child {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.admin-page .admin-resource-list {
+  margin-top: 20px;
+  gap: 16px;
+}
+
+.admin-page .resource-card {
+  padding: 22px;
+  gap: 13px;
+}
+
+.admin-page .resource-admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.admin-page .admin-resource-form {
+  max-width: none;
+  margin: 20px 0 34px;
+}
+
+.admin-page .notice-card,
+.admin-page .form-error {
+  margin-bottom: 18px;
+}
+
+@media (max-width: 850px) {
+  .admin-page .admin-quick-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-page .admin-video-list > article {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-page {
+    padding-top: 28px;
+  }
+
+  .admin-page .admin-quick-grid {
+    gap: 10px;
+  }
+
+  .admin-page .admin-video-form {
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+
+  .admin-page .admin-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-page .admin-video-list > article > img {
+    width: 100%;
+  }
+
+  .admin-page .admin-video-list > article > div:last-child {
+    width: 100%;
+  }
+
+  .admin-page .admin-video-list > article > div:last-child button {
+    flex: 1;
+  }
+}
+
+/* =====================================
+   RESOURCE UPLOAD FORM - REDESIGN
+   ===================================== */
+
+.admin-page .admin-resource-form {
+  width: 100%;
+  max-width: 100%;
+  margin: 24px 0 40px;
+  padding: 30px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+
+.admin-page .resource-field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.admin-page .resource-field-full {
+  grid-column: 1 / -1;
+}
+
+.admin-page .resource-field label {
+  display: block;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.admin-page .resource-field input,
+.admin-page .resource-field select,
+.admin-page .resource-field textarea {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  margin: 0;
+  padding: 13px 15px;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font: inherit;
+  outline-color: var(--accent);
+  box-sizing: border-box;
+}
+
+.admin-page .resource-field textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.admin-page .resource-field input[type="file"] {
+  padding: 12px;
+  cursor: pointer;
+}
+
+.admin-page .resource-field small {
+  display: block;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.admin-page .resource-submit {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.admin-page .resource-submit button {
+  min-width: 180px;
+  min-height: 48px;
+  padding: 0 24px;
+}
+
+.admin-page .admin-resource-heading {
+  margin-top: 38px;
+  margin-bottom: 20px;
+}
+
+.admin-page .admin-resource-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.admin-page .resource-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  gap: 12px;
+}
+
+.admin-page .resource-admin-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+@media (max-width: 700px) {
+  .admin-page .admin-resource-form {
+    grid-template-columns: 1fr;
+    padding: 20px;
+    gap: 20px;
+  }
+
+  .admin-page .resource-field-full {
+    grid-column: auto;
+  }
+
+  .admin-page .resource-submit {
+    justify-content: stretch;
+  }
+
+  .admin-page .resource-submit button {
+    width: 100%;
+  }
+
+  .admin-page .admin-resource-list {
+    grid-template-columns: 1fr;
+  }
+}
+/* =====================================
+   RESOURCE CARDS - HOME AND CATEGORY
+   ===================================== */
+
+.resource-card-inline {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 18px;
+  min-width: 0;
+  min-height: 260px;
+  padding: 24px;
+  text-decoration: none;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.resource-card-inline:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+}
+
+.resource-card-icon {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  color: var(--accent);
+  background: var(--surface-2);
+}
+
+.resource-card-icon span {
+  position: absolute;
+  right: -8px;
+  bottom: -6px;
+  padding: 3px 6px;
+  border-radius: 5px;
+  font-size: 9px;
+  font-weight: 800;
+  color: white;
+  background: #dc5555;
+}
+
+.resource-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 9px;
+}
+
+.resource-card-content .eyebrow {
+  font-size: 10px;
+  letter-spacing: 1.2px;
+}
+
+.resource-card-content h3 {
+  margin: 0;
+  font-size: 19px;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.resource-card-content p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.resource-card-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.resource-viewer {
+  width: 100%;
+  height: 80vh;
+  min-height: 550px;
+  margin-top: 25px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: white;
+}
+
+.resource-viewer iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: white;
+}
+
+.resource-detail-page > h1 {
+  margin-top: 25px;
+}
+
+@media (max-width: 600px) {
+  .resource-card-inline {
+    min-height: 220px;
+    padding: 19px;
+  }
+
+  .resource-viewer {
+    height: 70vh;
+    min-height: 400px;
+  }
+}

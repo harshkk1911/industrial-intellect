@@ -9,6 +9,8 @@ import {
   listAdminContent
 } from '../controllers/contentController.js';
 
+import { uploadResourceFile, createResource } from '../controllers/resourceController.js';
+
 import {
   allowRoles,
   requireAuth
@@ -18,6 +20,9 @@ const router = Router();
 
 // All routes below require admin authentication
 router.use(requireAuth);
+
+// Resource upload (private file storage; public viewers receive an inline preview only)
+router.post('/resources', allowRoles('super_admin', 'content_admin', 'editor'), (req, res, next) => uploadResourceFile(req, res, error => error ? next(error) : createResource(req, res, next)));
 
 // Dashboard statistics
 router.get(

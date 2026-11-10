@@ -3,14 +3,7 @@
 // import { useState } from 'react';
 // import { useTheme } from '../context/ThemeContext';
 
-// const links = [
-//   ['Home', '/'],
-//   ['Categories', '/categories'],
-//   ['Courses', '/courses'],
-//   ['Blog', '/blog'],
-//   ['About', '/about'],
-//   ['Contact', '/contact']
-// ];
+// const links = [['Home', '/'], ['Categories', '/categories'], ['About', '/about'], ['Contact', '/contact']];
 
 // export default function Header() {
 //   const { theme, toggleTheme } = useTheme();

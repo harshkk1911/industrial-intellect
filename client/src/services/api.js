@@ -12,6 +12,7 @@ export async function apiRequest(path, options = {}) {
   let response;
   try {
     response = await fetch(`${API_URL}${path.startsWith('/') ? path : `/${path}`}`, {
+      cache: 'no-store',
       ...options,
       headers
     });

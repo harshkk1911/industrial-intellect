@@ -7,7 +7,7 @@ export default function VideoCard({ video, saved, favourite, onToggleSaved, onTo
 
   return (
     <article className="content-card">
-      <Link to={`/video/${video.slug}`} className="thumbnail-wrap" aria-label={`Watch ${video.title}`}>
+      <Link to={`/video/${video.slug || video._id}`} className="thumbnail-wrap" aria-label={`Watch ${video.title}`}>
         {thumbnail
           ? <img src={thumbnail} alt="" loading="lazy" />
           : <div className="thumbnail-placeholder"><Play size={34} /></div>}
@@ -16,12 +16,12 @@ export default function VideoCard({ video, saved, favourite, onToggleSaved, onTo
       </Link>
       <div className="card-body">
         <div className="eyebrow">{video.category || 'Learning'}{video.courseTitle ? ` · ${video.courseTitle}` : ''}</div>
-        <Link to={`/video/${video.slug}`} className="card-title">{video.title}</Link>
+        <Link to={`/video/${video.slug || video._id}`} className="card-title">{video.title}</Link>
         <p className="muted clamp-2">{video.description}</p>
         <div className="card-actions">
           <button className={`icon-button ${saved ? 'is-active' : ''}`} onClick={() => onToggleSaved(video._id)} title="Watch later" aria-label="Watch later"><Bookmark size={17} /></button>
           <button className={`icon-button ${favourite ? 'is-active' : ''}`} onClick={() => onToggleFavourite(video._id)} title="Favourite" aria-label="Favourite"><Heart size={17} /></button>
-          <Link className="text-link" to={`/video/${video.slug}`}>Watch video <span aria-hidden>→</span></Link>
+          <Link className="text-link" to={`/video/${video.slug || video._id}`}>Watch video <span aria-hidden>→</span></Link>
         </div>
       </div>
     </article>

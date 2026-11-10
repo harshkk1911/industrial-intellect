@@ -1,114 +1,117 @@
-
-import {
-  ArrowRight,
-  BookOpen,
-  GraduationCap,
-  Layers3,
-  PlayCircle,
-  Sparkles
-} from 'lucide-react';
-
+import { ArrowRight, PlayCircle, Sparkles, FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
-
 import SearchBar from '../components/SearchBar';
 import VideoCard from '../components/VideoCard';
 import { apiRequest } from '../services/api';
 
+const CATEGORIES = [
+  'Market Intelligence',
+  'Industrial Skills',
+  'Soft Skills',
+  'Others'
+];
+
+function ResourceCard({ resource }) {
+  const extension = resource.fileName?.split('.').pop()?.toUpperCase() || 'FILE';
+
+  return (
+    <Link
+      className="resource-card resource-card-inline"
+      to={`/resource/${resource._id}`}
+    >
+      <div className="resource-card-icon">
+        <FileText size={30} />
+        <span>{extension}</span>
+      </div>
+      <div className="resource-card-content">
+        <span className="eyebrow">VIEW-ONLY RESOURCE</span>
+        <h3>{resource.title}</h3>
+        <p>{resource.description || resource.fileName}</p>
+        <span className="resource-card-action">View document <ArrowRight size={15} /></span>
+      </div>
+    </Link>
+  );
+}
+
 export default function Home({ library }) {
   const [query, setQuery] = useState('');
   const [videos, setVideos] = useState([]);
+  const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [articleCount, setArticleCount] = useState(0);
 
   useEffect(() => {
-    let cancelled = false;
+    let active = true;
 
-    async function loadVideos() {
-      try {
-        setLoading(true);
-        setError('');
-
-        const data = await apiRequest('/content?type=video&limit=50');
-
-        if (!cancelled) {
-          setVideos(data.items || []);
+    Promise.all([
+      apiRequest('/content?type=video&limit=50'),
+      apiRequest('/content?type=resource&limit=50')
+    ])
+      .then(([videoData, resourceData]) => {
+        if (active) {
+          setVideos(videoData.items || []);
+          setResources(resourceData.items || []);
         }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err.message || 'Unable to load videos.');
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }
-
-    loadVideos();
-    apiRequest('/content?type=article&limit=1')
-      .then(data => { if (!cancelled) setArticleCount(data.pagination?.total || data.items?.length || 0); })
-      .catch(() => {});
+      })
+      .catch(err => {
+        if (active) setError(err.message || 'Unable to load content.');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
 
     return () => {
-      cancelled = true;
+      active = false;
     };
   }, []);
 
   const filteredVideos = useMemo(() => {
-    const normalizedQuery = query.toLowerCase().trim();
+    const q = query.trim().toLowerCase();
 
-    if (!normalizedQuery) return videos;
-
-    return videos.filter(video =>
-      `${video.title} ${video.description} ${video.category} ${(video.tags || []).join(' ')}`
-        .toLowerCase()
-        .includes(normalizedQuery)
-    );
+    return q
+      ? videos.filter(v =>
+          `${v.title} ${v.description} ${v.category} ${(v.tags || []).join(' ')}`
+            .toLowerCase()
+            .includes(q)
+        )
+      : videos;
   }, [videos, query]);
 
-  const courseCount = new Set(videos.map(video => video.courseTitle).filter(Boolean)).size;
-  const categoryCount = new Set(videos.map(video => video.category).filter(Boolean)).size;
+  const filteredResources = useMemo(() => {
+    const q = query.trim().toLowerCase();
 
-  const stats = [
-    ['Videos', videos.length, PlayCircle],
-    ['Courses', courseCount, GraduationCap],
-    ['Articles', articleCount, BookOpen],
-    ['Categories', categoryCount, Layers3]
-  ];
+    return q
+      ? resources.filter(r =>
+          `${r.title} ${r.description} ${r.category} ${r.fileName}`
+            .toLowerCase()
+            .includes(q)
+        )
+      : resources;
+  }, [resources, query]);
 
   return (
     <>
       <section className="hero-section">
         <div className="hero-glow glow-one" />
         <div className="hero-glow glow-two" />
-
         <div className="container hero-content">
           <div className="eyebrow hero-eyebrow">
             <Sparkles size={15} /> YOUR SPACE TO GROW
           </div>
-
           <h1>
             Curiosity builds<br />
             <span>what comes next.</span>
           </h1>
-
           <p>
-            Explore ideas, learn practical skills and discover resources
-            that move your thinking forward.
+            Explore ideas, learn practical skills and discover resources that
+            move your thinking forward.
           </p>
-
           <div className="hero-actions">
-            <Link className="button button-primary" to="/courses">
-              Explore courses <ArrowRight size={17} />
-            </Link>
-
-            <Link className="button button-secondary" to="/categories">
-              Explore library
+            <Link className="button button-primary" to="/categories">
+              Explore categories <ArrowRight size={17} />
             </Link>
           </div>
-
           <div className="hero-note">
             <span className="status-dot" />
             Learn. Explore. Innovate.
@@ -116,40 +119,47 @@ export default function Home({ library }) {
         </div>
       </section>
 
-      <section className="container stats-grid" aria-label="Platform content statistics">
-        {stats.map(([label, value, Icon]) => (
-          <div className="stat-card" key={label}>
-            <Icon size={20} />
-            <strong>{value}</strong>
-            <span>{label}</span>
-          </div>
-        ))}
+      <section className="container stats-grid">
+        <div className="stat-card">
+          <PlayCircle />
+          <strong>{videos.length}</strong>
+          <span>Videos</span>
+        </div>
+        <div className="stat-card">
+          <FileText />
+          <strong>{resources.length}</strong>
+          <span>Resources</span>
+        </div>
+        <div className="stat-card">
+          <Sparkles />
+          <strong>4</strong>
+          <span>Categories</span>
+        </div>
+        <div className="stat-card">
+          <PlayCircle />
+          <strong>{videos.filter(v => v.featured).length}</strong>
+          <span>Featured</span>
+        </div>
       </section>
 
       <section className="section container">
         <div className="section-heading">
           <div>
             <div className="eyebrow">DISCOVER SOMETHING NEW</div>
-            <h2>Explore the library</h2>
+            <h2>Explore all content</h2>
             <p className="muted">
-              Find videos and learning resources by topic, course or keyword.
+              Browse videos, PDFs, spreadsheets and other learning materials.
             </p>
           </div>
         </div>
 
         <SearchBar value={query} onChange={setQuery} />
 
-        {loading && (
-          <div className="empty-state">Loading videos...</div>
-        )}
-
-        {error && (
-          <div className="empty-state">
-            Unable to load videos: {error}
-          </div>
-        )}
-
-        {!loading && !error && (
+        {loading ? (
+          <div className="empty-state">Loading content...</div>
+        ) : error ? (
+          <div className="empty-state">{error}</div>
+        ) : (
           <>
             <div className="content-grid">
               {filteredVideos.map(video => (
@@ -162,11 +172,15 @@ export default function Home({ library }) {
                   onToggleFavourite={library.toggleFavourite}
                 />
               ))}
+
+              {filteredResources.map(resource => (
+                <ResourceCard key={resource._id} resource={resource} />
+              ))}
             </div>
 
-            {filteredVideos.length === 0 && (
+            {!filteredVideos.length && !filteredResources.length && (
               <div className="empty-state">
-                No videos found. Try another keyword.
+                No content found. Try another search.
               </div>
             )}
           </>
@@ -174,40 +188,29 @@ export default function Home({ library }) {
       </section>
 
       <section className="section section-soft">
-        <div className="container split-feature">
-          <div>
-            <div className="eyebrow">LEARNING, YOUR WAY</div>
-            <h2>
-              Build knowledge<br />
-              one idea at a time.
-            </h2>
-            <p className="muted">
-              Follow curated playlists, save videos for later and keep
-              track of the lessons you complete.
-            </p>
-            <Link className="text-link" to="/courses">
-              Browse courses <ArrowRight size={16} />
-            </Link>
+        <div className="container">
+          <div className="section-heading">
+            <div>
+              <div className="eyebrow">BROWSE BY INTEREST</div>
+              <h2>Explore categories</h2>
+            </div>
           </div>
 
-          <div className="feature-tiles">
-            <div className="feature-tile tile-blue">
-              <BookOpen />
-              <strong>Structured learning</strong>
-              <span>Courses and playlists</span>
-            </div>
-
-            <div className="feature-tile tile-purple">
-              <PlayCircle />
-              <strong>Learn visually</strong>
-              <span>Video lessons</span>
-            </div>
-
-            <div className="feature-tile tile-green">
-              <Sparkles />
-              <strong>Keep exploring</strong>
-              <span>Articles and resources</span>
-            </div>
+          <div className="category-grid">
+            {CATEGORIES.map((cat, i) => (
+              <Link
+                className="category-card"
+                to={`/category/${encodeURIComponent(cat)}`}
+                key={cat}
+              >
+                <span>{String(i + 1).padStart(2, '0')}</span>
+                <h3>{cat}</h3>
+                <small>
+                  {videos.filter(v => v.category === cat).length} videos ·{' '}
+                  {resources.filter(r => r.category === cat).length} resources →
+                </small>
+              </Link>
+            ))}
           </div>
         </div>
       </section>

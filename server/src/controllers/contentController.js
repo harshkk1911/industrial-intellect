@@ -1,6 +1,8 @@
 
 import Content from '../models/Content.js';
 import slugify from 'slugify';
+import mongoose from 'mongoose';
+import { deleteResourceFile } from './resourceController.js';
 
 export async function listPublicContent(req, res, next) {
   try {
@@ -45,8 +47,11 @@ export async function listPublicContent(req, res, next) {
 
 export async function getPublicContent(req, res, next) {
   try {
+    const key = decodeURIComponent(req.params.slug || '');
+    const identity = [{ slug: key }];
+    if (mongoose.isValidObjectId(key)) identity.push({ _id: key });
     const item = await Content.findOne({
-      slug: req.params.slug,
+      $or: identity,
       status: 'published'
     });
 
@@ -98,6 +103,10 @@ export async function createContent(req, res, next) {
     }
 
     const status = req.body.status || 'draft';
+    const allowedCategories = ['Market Intelligence', 'Industrial Skills', 'Soft Skills', 'Others'];
+    if (['video', 'resource'].includes(type) && !allowedCategories.includes(req.body.category)) {
+      return res.status(400).json({ message: 'Select one of the four available categories.' });
+    }
 
     const item = await Content.create({
       ...req.body,
@@ -127,6 +136,10 @@ export async function updateContent(req, res, next) {
 
     if (updates.title && !updates.slug) {
       updates.slug = makeSlug(updates.title);
+    }
+
+    if (updates.type === 'video' && updates.category && !['Market Intelligence', 'Industrial Skills', 'Soft Skills', 'Others'].includes(updates.category)) {
+      return res.status(400).json({ message: 'Select one of the four available categories.' });
     }
 
     if (updates.status === 'published') {
@@ -161,7 +174,7 @@ export async function updateContent(req, res, next) {
 // Delete content
 export async function deleteContent(req, res, next) {
   try {
-    const item = await Content.findByIdAndDelete(req.params.id);
+    const item = await Content.findById(req.params.id);
 
     if (!item) {
       return res.status(404).json({
@@ -169,6 +182,8 @@ export async function deleteContent(req, res, next) {
       });
     }
 
+    if (item.type === 'resource') await deleteResourceFile(item);
+    await item.deleteOne();
     res.json({ message: 'Content deleted' });
   } catch (error) {
     next(error);

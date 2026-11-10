@@ -151,6 +151,8 @@ export function AdminDashboard() {
   });
 
   const [videos, setVideos] = useState([]);
+  const [resources, setResources] = useState([]);
+  const [resourceForm, setResourceForm] = useState({ title: '', description: '', category: 'Others', status: 'draft', file: null });
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -166,6 +168,7 @@ export function AdminDashboard() {
   useEffect(() => {
     if (token) {
       loadVideos();
+      loadResources();
     }
   }, [token]);
 
@@ -192,6 +195,32 @@ export function AdminDashboard() {
     }
   }
 
+  async function loadResources() {
+    try { const data = await apiRequest('/admin/content?type=resource'); setResources(data.items || []); }
+    catch (err) { setError(err.message); }
+  }
+
+  async function uploadResource(event) {
+    event.preventDefault(); setError(''); setMessage('');
+    if (!resourceForm.file) { setError('Choose a file to upload.'); return; }
+    const body = new FormData(); body.append('title', resourceForm.title); body.append('description', resourceForm.description); body.append('category', resourceForm.category); body.append('status', resourceForm.status); body.append('file', resourceForm.file);
+    setBusy(true);
+    try { await apiRequest('/admin/resources', { method: 'POST', body }); setMessage('Resource uploaded successfully.'); setResourceForm({ title: '', description: '', category: 'Others', status: 'draft', file: null }); await loadResources(); }
+    catch (err) { setError(err.message); } finally { setBusy(false); }
+  }
+
+  async function toggleResourcePublish(resource) {
+    const status = resource.status === 'published' ? 'draft' : 'published';
+    try { await apiRequest(`/admin/content/${resource._id}`, { method: 'PATCH', body: JSON.stringify({ status }) }); setMessage(status === 'published' ? 'Resource published.' : 'Resource moved to drafts.'); await loadResources(); }
+    catch (err) { setError(err.message); }
+  }
+
+  async function deleteResource(id) {
+    if (!window.confirm('Delete this resource permanently?')) return;
+    try { await apiRequest(`/admin/content/${id}`, { method: 'DELETE' }); setMessage('Resource deleted.'); await loadResources(); }
+    catch (err) { setError(err.message); }
+  }
+
   function openAddForm() {
     setForm(emptyForm);
     setEditingId(null);
@@ -206,7 +235,7 @@ export function AdminDashboard() {
       youtubeUrl: video.youtubeUrl || '',
       description: video.description || '',
       category: video.category || '',
-      courseTitle: video.courseTitle || '',
+      courseTitle: '',
       tags: (video.tags || []).join(', '),
       status: video.status || 'draft',
       featured: Boolean(video.featured)
@@ -246,7 +275,6 @@ export function AdminDashboard() {
         thumbnailUrl: getThumbnail(form.youtubeUrl),
         description: form.description.trim(),
         category: form.category.trim(),
-        courseTitle: form.courseTitle.trim(),
         tags: form.tags
           .split(',')
           .map(tag => tag.trim())
@@ -334,7 +362,7 @@ export function AdminDashboard() {
   }
 
   return (
-    <section className="container page-section">
+    <section className="container page-section admin-page">
       <div className="admin-welcome">
         <div>
           <div className="eyebrow">
@@ -359,7 +387,7 @@ export function AdminDashboard() {
         <div>
           <h2>Video Management</h2>
           <p className="muted">
-            Add and manage your YouTube learning videos.
+            Add videos and assign each one to a fixed category.
           </p>
         </div>
 
@@ -375,7 +403,7 @@ export function AdminDashboard() {
       {error && <div className="form-error">{error}</div>}
 
       {showForm && (
-        <form className="admin-login-card" onSubmit={saveVideo}>
+        <form className="admin-login-card admin-video-form" onSubmit={saveVideo}>
           <div className="admin-welcome">
             <h2>{editingId ? 'Edit video' : 'Add YouTube video'}</h2>
 
@@ -440,24 +468,13 @@ export function AdminDashboard() {
 
           <label>
             Category
-            <input
-              value={form.category}
-              onChange={event =>
-                setForm({ ...form, category: event.target.value })
-              }
-              placeholder="Python, AI, Web Development..."
-            />
-          </label>
-
-          <label>
-            Course / Playlist title (optional)
-            <input
-              value={form.courseTitle}
-              onChange={event =>
-                setForm({ ...form, courseTitle: event.target.value })
-              }
-              placeholder="e.g. Python for Beginners"
-            />
+            <select required value={form.category} onChange={event => setForm({ ...form, category: event.target.value })}>
+              <option value="">Select a category</option>
+              <option>Market Intelligence</option>
+              <option>Industrial Skills</option>
+              <option>Soft Skills</option>
+              <option>Others</option>
+            </select>
           </label>
 
           <label>
@@ -508,7 +525,95 @@ export function AdminDashboard() {
         </form>
       )}
 
-      <div className="admin-welcome">
+      <div className="section-heading admin-resource-heading">
+        <div><h2>Upload view-only resource</h2><p className="muted">PDF, Excel (XLS/XLSX) and Word (DOCX), maximum 20 MB.</p></div>
+      </div>
+      <form className="admin-resource-form" onSubmit={uploadResource}>
+        <div className="resource-field resource-field-full">
+          <label htmlFor="resource-title">Resource title</label>
+          <input
+            id="resource-title"
+            required
+            maxLength={180}
+            value={resourceForm.title}
+            onChange={e =>
+              setResourceForm({ ...resourceForm, title: e.target.value })
+            }
+            placeholder="Enter resource title"
+          />
+        </div>
+
+        <div className="resource-field resource-field-full">
+          <label htmlFor="resource-description">Description</label>
+          <textarea
+            id="resource-description"
+            rows={4}
+            value={resourceForm.description}
+            onChange={e =>
+              setResourceForm({ ...resourceForm, description: e.target.value })
+            }
+            placeholder="Describe this resource..."
+          />
+        </div>
+
+        <div className="resource-field">
+          <label htmlFor="resource-category">Category</label>
+          <select
+            id="resource-category"
+            required
+            value={resourceForm.category}
+            onChange={e =>
+              setResourceForm({ ...resourceForm, category: e.target.value })
+            }
+          >
+            <option>Market Intelligence</option>
+            <option>Industrial Skills</option>
+            <option>Soft Skills</option>
+            <option>Others</option>
+          </select>
+        </div>
+
+        <div className="resource-field">
+          <label htmlFor="resource-status">Publishing status</label>
+          <select
+            id="resource-status"
+            value={resourceForm.status}
+            onChange={e =>
+              setResourceForm({ ...resourceForm, status: e.target.value })
+            }
+          >
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+          </select>
+        </div>
+
+        <div className="resource-field resource-field-full">
+          <label htmlFor="resource-file">Upload file</label>
+          <input
+            id="resource-file"
+            required
+            type="file"
+            accept=".pdf,.xls,.xlsx,.docx,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            onChange={e =>
+              setResourceForm({
+                ...resourceForm,
+                file: e.target.files?.[0] || null
+              })
+            }
+          />
+          <small>PDF, Excel or Word document. Maximum 20 MB.</small>
+        </div>
+
+        <div className="resource-field-full resource-submit">
+          <button className="button button-primary" disabled={busy}>
+            {busy ? 'Uploading…' : 'Upload resource'}
+          </button>
+        </div>
+      </form>
+      <h3 className="section-title-spaced">Uploaded resources</h3>
+      <div className="admin-resource-list">{resources.map(resource=><article className="resource-card" key={resource._id}><strong>{resource.title}</strong><span>{resource.category} · {resource.status}</span><small>{resource.fileName}</small><div className="resource-admin-actions"><button type="button" className="button button-secondary" onClick={()=>toggleResourcePublish(resource)}>{resource.status === 'published' ? 'Unpublish' : 'Publish'}</button><button type="button" className="button button-secondary" onClick={()=>deleteResource(resource._id)}><Trash2 size={14}/> Delete</button></div></article>)}</div>
+
+      <div className="admin-toolbar">
         <input
           value={search}
           onChange={event => setSearch(event.target.value)}

@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
-    "seed:admin": "node src/scripts/seedAdmin.js"
+    "seed:admin": "node src/scripts/seedAdmin.js",
+    "migrate:categories": "node src/scripts/normalizeCategories.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -17,7 +18,11 @@
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.5",
-    "slugify": "^1.6.6"
+    "slugify": "^1.6.6",
+    "multer": "^2.0.2",
+    "xlsx": "^0.18.5",
+    "mammoth": "^1.9.0",
+    "sanitize-html": "^2.17.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.7"

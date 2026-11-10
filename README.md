@@ -2,42 +2,36 @@
 
 **Learn. Explore. Innovate.**
 
-MERN learning platform with a public content library and a private admin panel. Public videos, categories, playlists and articles are loaded from MongoDB through the Express API; the frontend no longer imports hardcoded sample content.
+MERN learning platform with a public content library and a private admin panel.
 
-## Current functionality
+## Current structure
 
-- React + Vite frontend with responsive layout and dark/light theme toggle.
-- Public Home, Categories, Courses/Playlists, Video details, Watch Later, Favourites, About, Contact and Blog pages.
-- Public video catalogue and video detail pages loaded from MongoDB.
-- Categories and playlist names derived from published MongoDB videos; published course/article records are also fetched from the API.
-- YouTube thumbnails, embedded playback and an external YouTube link.
-- Browser-local Watch Later, Favourites and completion tracking (not synced across devices).
-- Express + MongoDB API; admin login with bcrypt password hashing and JWT.
-- Admin can add, edit, publish/unpublish and delete YouTube videos, including category, course title, tags and featured status.
+- Fixed categories: **Market Intelligence**, **Industrial Skills**, **Soft Skills**, **Others**.
+- Home page shows all published videos and resources, with category browsing.
+- Category pages show videos and view-only resources for that category.
+- No Courses or Blog pages/navigation.
+- Video details are loaded from MongoDB by slug, with MongoDB `_id` fallback for older/missing slugs.
+- Admin can add/edit/publish/unpublish/delete YouTube videos and must choose one of the four categories.
+- Admin can upload PDF, XLS, XLSX and DOCX resources, assign a category, and publish/draft them.
+- Resource binaries are stored in MongoDB GridFS, not on Render's temporary local disk.
+- Published resources are served through an inline preview endpoint. Excel and Word files are converted to HTML for viewing; PDFs are displayed inline.
+- Watch Later, Favourites and completion tracking remain browser-local.
 
 ## Requirements
 
 - Node.js 20.19+ or 22.12+
 - npm
-- Local MongoDB or MongoDB Atlas
+- MongoDB local or MongoDB Atlas
 
-## 1. Install dependencies
+## Local setup
 
-From the project root, use two terminals or run these commands sequentially:
+Terminal 1 — backend:
 
 ```powershell
 cd server
 Copy-Item .env.example .env
 npm install
-
-cd ..\client
-Copy-Item .env.example .env
-npm install
 ```
-
-If `.env` already exists, do not overwrite it; edit it instead.
-
-## 2. Configure the backend
 
 Edit `server/.env`:
 
@@ -50,76 +44,107 @@ JWT_EXPIRES_IN=1d
 CLIENT_ORIGIN=http://localhost:5173
 ```
 
-For MongoDB Atlas, replace `MONGODB_URI` with your own Atlas connection string. Do not commit or share `.env` files.
-
-## 3. Configure the frontend
-
-For local development, `client/.env` should contain:
-
-```env
-VITE_API_URL=http://localhost:5000/api
-```
-
-When deploying, set `VITE_API_URL` in your frontend hosting environment to the deployed backend API base URL, for example `https://your-api.example.com/api`. Rebuild/redeploy the frontend after changing this variable. Also set backend `CLIENT_ORIGIN` to the exact deployed frontend origin (no path).
-
-## 4. Create the first Super Admin
-
-From the `server` directory:
-
-```powershell
-npm run seed:admin -- --email you@example.com --password "Use-A-Strong-Password"
-```
-
-Use a password of at least 12 characters. The script creates the Super Admin only if that email does not already exist.
-
-## 5. Run locally
-
-Terminal 1 — backend:
-
-```powershell
-cd server
-npm run dev
-```
+For Atlas, use your Atlas connection string. Keep `.env` private and never commit it.
 
 Terminal 2 — frontend:
 
 ```powershell
 cd client
+Copy-Item .env.example .env
+npm install
+```
+
+`client/.env`:
+
+```env
+VITE_API_URL=http://localhost:5000/api
+```
+
+Start backend (`server` folder):
+
+```powershell
 npm run dev
 ```
 
-Open `http://localhost:5173`. Admin login: `http://localhost:5173/admin/login`.
+Start frontend (`client` folder):
 
-## 6. Add your first video
+```powershell
+npm run dev
+```
 
-1. Sign in at `/admin/login` with the Super Admin credentials created above.
-2. Open the Admin workspace and choose **Add video**.
-3. Enter a title, YouTube URL, description, category and optional course/playlist title and tags.
-4. Choose **Published** to make it visible publicly, or **Draft** to keep it private.
-5. Save. The video is stored in MongoDB and appears on the public site after refresh.
+Open `http://localhost:5173`.
 
-The public video detail route uses the MongoDB document's `slug`, not the old frontend sample array. A video in Draft or Archived status is intentionally not visible publicly.
+## Admin setup
+
+From `server`:
+
+```powershell
+npm run seed:admin -- --email you@example.com --password "Use-A-Strong-Password"
+```
+
+Then sign in at `http://localhost:5173/admin/login`.
+
+## Existing content category migration
+
+Older records may have category names such as `Learning Skills`, `Python`, etc. The one-time migration assigns unsupported/legacy category names to **Others**. Run this only after backing up the database:
+
+```powershell
+cd server
+npm run migrate:categories
+```
+
+After migration, edit individual records in Admin to assign the correct category.
+
+## Resource formats and view-only behaviour
+
+Supported uploads: PDF, XLS, XLSX and DOCX; maximum 20 MB per file. The admin uploads files through the authenticated API. GridFS stores the bytes in the connected MongoDB database. The public API only returns published resources.
+
+The viewer does not expose a normal download link and serves files inline. Browser-based viewing cannot provide absolute copy protection: a visitor may still use screenshots, browser tools, or other capture methods. PDF browser viewers may expose their own controls depending on the browser. Do not upload confidential or sensitive documents expecting DRM-level protection.
+
+Other file types should be converted to PDF before upload unless a dedicated safe previewer is added.
+
+## Render deployment
+
+The existing Render **Static Site** deploys only the React frontend. The Express API must also be deployed as a separate Render **Web Service** connected to this same GitHub repository.
+
+### Backend Web Service
+
+- Root Directory: `server`
+- Build Command: `npm install`
+- Start Command: `npm start`
+- Environment variables:
+  - `NODE_ENV=production`
+  - `MONGODB_URI=<MongoDB Atlas connection string>`
+  - `JWT_SECRET=<new long random secret>`
+  - `JWT_EXPIRES_IN=1d`
+  - `CLIENT_ORIGIN=https://<your-render-static-site-domain>`
+
+### Frontend Static Site
+
+- Root Directory: project root (or use the corresponding client directory configuration)
+- Build Command: `cd client && npm install && npm run build`
+- Publish Directory: `client/dist`
+- Environment variable:
+  - `VITE_API_URL=https://<your-render-backend-service>.onrender.com/api`
+
+After changing `VITE_API_URL`, trigger a new frontend deployment because Vite embeds it at build time. Deploy the backend before the frontend.
 
 ## API overview
 
 - `GET /api/health`
-- `GET /api/content` — public published content; supports `type`, `category`, `course`, `search`, `sort`, `page`, `limit`
-- `GET /api/content/:slug` — public published content detail
-- `POST /api/auth/login` — admin login
-- `GET /api/auth/me` — current admin profile (JWT required)
-- `POST /api/admin/content` — create content (JWT required)
-- `PATCH /api/admin/content/:id` — update content (JWT required)
-- `DELETE /api/admin/content/:id` — delete content (JWT required)
-- `GET /api/admin/dashboard` — database counts (JWT required)
+- `GET /api/content?type=video|resource&category=...`
+- `GET /api/content/:slug` (also accepts a MongoDB ObjectId)
+- `GET /api/content/resources/:id/view` (published resource preview)
+- `POST /api/auth/login`
+- `GET /api/admin/content?type=video|resource` (JWT required)
+- `POST /api/admin/content` (JWT required)
+- `PATCH /api/admin/content/:id` (JWT required)
+- `DELETE /api/admin/content/:id` (JWT required)
+- `POST /api/admin/resources` (JWT required; multipart field name `file`)
 
-## Important limitations / next phase
+## Important
 
-- Admin UI currently manages YouTube videos; course/article authoring screens and admin-user management are not implemented yet.
-- Categories and playlist groups are currently derived from video `category` and `courseTitle` fields.
-- Cloud uploads, production analytics, quizzes, newsletter, PWA and AI assistant are later phases.
-- Watch Later, Favourites and completion progress are browser-local.
-- Configure production HTTPS, CORS, backups, monitoring, rate limits, SEO metadata, sitemap and security review before public launch.
-
-## YouTube usage
-
-Only embed videos you are authorized to use. YouTube may still restrict embedding for some videos or playback contexts even when the creator has enabled embedding. The site also provides an external YouTube link. Do not download/rehost other creators' videos without permission.
+- Never commit `.env` files or expose MongoDB credentials/JWT secrets in frontend variables.
+- If credentials were previously shared, rotate them.
+- Use HTTPS in production and back up MongoDB Atlas regularly.
+- YouTube embedding remains subject to YouTube's own restrictions.

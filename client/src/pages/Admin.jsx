@@ -501,7 +501,7 @@ export function AdminDashboard() {
             </select>
           </label>
 
-          <label>
+          <label className="featured-checkbox">
             <input
               type="checkbox"
               checked={form.featured}
@@ -509,7 +509,7 @@ export function AdminDashboard() {
                 setForm({ ...form, featured: event.target.checked })
               }
             />
-            Featured video
+            <span>Featured video</span>
           </label>
 
           <button
